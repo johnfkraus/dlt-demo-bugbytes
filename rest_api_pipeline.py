@@ -9,12 +9,22 @@ from dlt.sources.rest_api import (
 print(f"working directory: {os.getcwd()=}")
 db_path = Path.cwd() / "bugbytes_rest_api.duckdb"
 
+def lower_email(record):
+    record["email"] = record["email"].lower()
+
+
 source = rest_api_source({
     'client': {
         'base_url': 'https://jsonplaceholder.typicode.com/',
     },
     'resources': [
-        'users',
+        {
+            "name": "users",
+            # "processing_steps": [
+            #     # {"filter": lambda x: int(x['id']) % 2 != 0 },
+            #     {"map": lower_email}
+            # ]
+        },
         'posts'
         ],
     "resource_defaults": {
@@ -36,6 +46,19 @@ if __name__ == "__main__":
     with pipeline.sql_client() as client:
         # add primary keys manually
 
-        print(f"ALTER TABLE {pipeline.dataset_name}.users ADD CONSTRAINT users_pk PRIMARY KEY (id);")
-        client.execute(f"ALTER TABLE {pipeline.dataset_name}.users ADD CONSTRAINT users_pk PRIMARY KEY (id);")
-        client.execute(f"ALTER TABLE {pipeline.dataset_name}.posts ADD CONSTRAINT posts_pk PRIMARY KEY (id);")
+        rows = client.execute(f"SELECT * FROM {pipeline.dataset_name}.users LIMIT 3;")
+
+        for row in rows.fetchall():
+            print(row)
+
+        rows2 = client.execute(f"SELECT * FROM {pipeline.dataset_name}.posts LIMIT 3;")
+
+        for row in rows2.fetchall():
+            print(row)
+
+    # with pipeline.sql_client() as client:
+    #     # add primary keys manually
+    #
+    #     print(f"ALTER TABLE {pipeline.dataset_name}.users ADD CONSTRAINT users_pk PRIMARY KEY (id);")
+    #     client.execute(f"ALTER TABLE {pipeline.dataset_name}.users ADD CONSTRAINT users_pk PRIMARY KEY (id);")
+    #     client.execute(f"ALTER TABLE {pipeline.dataset_name}.posts ADD CONSTRAINT posts_pk PRIMARY KEY (id);")
