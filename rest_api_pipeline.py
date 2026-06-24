@@ -11,6 +11,7 @@ db_path = Path.cwd() / "bugbytes_rest_api.duckdb"
 
 def lower_email(record):
     record["email"] = record["email"].lower()
+    return record
 
 
 source = rest_api_source({
@@ -20,12 +21,12 @@ source = rest_api_source({
     'resources': [
         {
             "name": "users",
-            # "processing_steps": [
-            #     # {"filter": lambda x: int(x['id']) % 2 != 0 },
-            #     {"map": lower_email}
-            # ]
+            "processing_steps": [
+                {"filter": lambda x: x['id'] % 2 != 0 },
+                {"map": lower_email}
+            ]
         },
-        'posts'
+        "posts"
         ],
     "resource_defaults": {
         "write_disposition": "replace",
